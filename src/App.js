@@ -5,10 +5,10 @@ import './App.css';
 const staticConfig = {
   characters: ["hiro","sherry","ema","hanna"],             // 你的角色資料夾名稱
   sounds: ["gugugaga_hiro.wav", "kiang_ema.mp3","kiang_hiro.wav","艾瑪銀叫.ogg","希羅慘叫.ogg"], // 你的音效檔名 (強烈建議全部轉成 mp3 或 ogg)
-  backgrounds: ["background1.png","background2.png","background3.png"
-    ,"background4.png","background5.png","background6.png"
-    ,"background7.png","希羅起床.png","牢希斷頭台.png","牢瑪電梯.png"
-    ,"牢瑪斷頭台.png","漢娜盪鞦韆.png","橘遠聖經.png"
+  backgrounds: ["background1.jpg","background2.jpg","background3.jpg"
+    ,"background4.jpg","background5.jpg","background6.jpg"
+    ,"希羅起床.jpg","牢希斷頭台.jpg","牢瑪電梯.jpg"
+    ,"牢瑪斷頭台.jpg","漢娜盪鞦韆.jpg","橘遠聖經.jpg"
   ]         // 你的背景檔名
 };
 
