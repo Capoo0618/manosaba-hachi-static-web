@@ -4,11 +4,12 @@ import './App.css';
 // 1. 靜態設定檔：請根據你 public/assets 裡面的實際檔名來填寫
 const staticConfig = {
   characters: ["hiro","sherry","ema","hanna"],             // 你的角色資料夾名稱
-  sounds: ["gugugaga_hiro.wav", "kiang_ema.mp3","kiang_hiro.wav","艾瑪銀叫.ogg","希羅慘叫.ogg"], // 你的音效檔名 (強烈建議全部轉成 mp3 或 ogg)
-  backgrounds: ["background1.jpg","background2.jpg","background3.jpg"
-    ,"background4.jpg","background5.jpg","background6.jpg"
-    ,"希羅起床.jpg","牢希斷頭台.jpg","牢瑪電梯.jpg"
-    ,"牢瑪斷頭台.jpg","漢娜盪鞦韆.jpg","橘遠聖經.jpg"
+  sounds: ["gugugaga_hiro.mp3", "kiang_ema.mp3","kiang_hiro.mp3","艾瑪銀叫.mp3","希羅慘叫.mp3"], // 你的音效檔名 (強烈建議全部轉成 mp3 或 ogg)
+  backgrounds: ["大廳.webp","牢房前走廊.webp","牢房.webp"
+    ,"禁閉室前走廊.webp","餐廳.webp","醫務室.webp"
+    ,"希羅起床.webp","牢希斷頭台.webp","牢瑪電梯.webp"
+    ,"牢瑪斷頭台.webp","漢娜盪鞦韆.webp","橘遠聖經.webp"
+    ,"希羅開機.webp","艾瑪開機.webp"
   ]         // 你的背景檔名
 };
 
@@ -34,16 +35,28 @@ function App() {
   const redTimerRef = useRef(null);
   const rainbowTimerRef = useRef(null);
 
-  // 3. 預載資源 (保持原樣，但資源路徑改為純前端讀取)
+  // 新的預載邏輯：只下載「當前畫面上」正在顯示的角色與背景
   useEffect(() => {
-    if (config.characters.length > 0) {
-      config.characters.forEach(char => {
-        ['1.png', '2.png'].forEach(f => { const img = new Image(); img.src = `/assets/${char}/${f}`; });
+    // 1. 只預載目前選中的角色 (包含平常狀態和點擊狀態)
+    if (state.char) {
+      ['1.webp', '2.webp'].forEach(f => { 
+        const img = new Image(); 
+        img.src = `/assets/${state.char}/${f}`; 
       });
-      config.backgrounds.forEach(bg => { const img = new Image(); img.src = `/assets/background/${bg}`; });
-      config.sounds.forEach(s => { const a = new Audio(`/assets/sounds/${s}`); a.preload = "auto"; });
     }
-  }, [config]);
+    // 2. 只預載目前選中的背景
+    if (state.bg) {
+      const img = new Image(); 
+      img.src = `/assets/background/${state.bg}`;
+    }
+    // 3. 音效通常檔案很小，只預載目前勾選的音效
+    if (state.selectedSounds.length > 0) {
+      state.selectedSounds.forEach(s => { 
+        const a = new Audio(`/assets/sounds/${s}`); 
+        a.preload = "auto"; 
+      });
+    }
+  }, [state.char, state.bg, state.selectedSounds]); // 當玩家切換角色或背景時，才會觸發下載
 
   const handleAction = (e) => {
     if (canMove || isProcessing) return; 
@@ -52,7 +65,7 @@ function App() {
     setIsProcessing(true);
     
     // 隨機觸發彩虹效果
-    const rainbowTrigger = Math.random() < 0.001;
+    const rainbowTrigger = Math.random() < 0.1;
     
     if (rainbowTrigger) {
       if (rainbowTimerRef.current) clearTimeout(rainbowTimerRef.current);
@@ -125,7 +138,7 @@ function App() {
             一共叫了 <span className="score-num">{state.count}</span> 次
         </div>
         <div className={`move-toggle-box ${canMove ? 'active' : ''}`} onClick={() => setCanMove(!canMove)}>
-            <img src={`/assets/botton/move-btn.png`} alt="move" />
+            <img src={`/assets/botton/move-btn.webp`} alt="move" />
         </div>
       </div>
 
@@ -155,7 +168,7 @@ function App() {
             }}
           >
             <img 
-              src={`/assets/${state.char}/${status.isPressed ? '2.png' : '1.png'}`} 
+              src={`/assets/${state.char}/${status.isPressed ? '2.webp' : '1.webp'}`} 
               className={`pop-img ${status.isRed ? 'effect-red' : ''} ${status.isRainbow ? 'effect-rainbow' : ''} ${canMove ? 'draggable' : ''}`}
               alt="char" 
               draggable="false" 
