@@ -34,6 +34,7 @@ function App() {
   const offset = useRef({ x: 0, y: 0 });
   const redTimerRef = useRef(null);
   const rainbowTimerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 新的預載邏輯：只下載「當前畫面上」正在顯示的角色與背景
   useEffect(() => {
@@ -58,6 +59,28 @@ function App() {
     }
   }, [state.char, state.bg, state.selectedSounds]); // 當玩家切換角色或背景時，才會觸發下載
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      // 進入全螢幕 (針對整個網頁 document.documentElement)
+      document.documentElement.requestFullscreen().catch(err => {
+        console.log(`全螢幕請求失敗: ${err.message}`);
+      });
+    } else {
+      // 退出全螢幕
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   const handleAction = (e) => {
     if (canMove || isProcessing) return; 
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -65,7 +88,7 @@ function App() {
     setIsProcessing(true);
     
     // 隨機觸發彩虹效果
-    const rainbowTrigger = Math.random() < 0.1;
+    const rainbowTrigger = Math.random() < 0.001;
     
     if (rainbowTrigger) {
       if (rainbowTimerRef.current) clearTimeout(rainbowTimerRef.current);
@@ -137,8 +160,9 @@ function App() {
             <span className="char-name">{state.char.toUpperCase()}</span> 
             一共叫了 <span className="score-num">{state.count}</span> 次
         </div>
-        <div className={`move-toggle-box ${canMove ? 'active' : ''}`} onClick={() => setCanMove(!canMove)}>
-            <img src={`/assets/botton/move-btn.webp`} alt="move" />
+        {/* 改成單一的設定按鈕，並開啟 settings 視窗 */}
+        <div className="move-toggle-box" onClick={() => setActiveModal('settings')}>
+            <img src={`/assets/botton/botton1.webp`} alt="settings" />
         </div>
       </div>
 
@@ -184,7 +208,11 @@ function App() {
       {activeModal && (
         <div className="modal-overlay" onClick={() => setActiveModal(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>{activeModal === 'char' ? '選擇角色' : activeModal === 'bg' ? '選擇背景' : '音訊過濾'}</h3>
+            <h3>
+              {activeModal === 'char' ? '選擇角色' : 
+               activeModal === 'bg' ? '選擇背景' : 
+               activeModal === 'sound' ? '音訊過濾' : '設定'}
+            </h3>
             <div className="modal-scroll-area">
               {activeModal === 'char' && config.characters.map(c => (
                 <button key={c} className={state.char === c ? 'active' : ''} onClick={() => { setState({...state, char: c}); setActiveModal(null); }}>{c}</button>
@@ -199,6 +227,24 @@ function App() {
                     setState({...state, selectedSounds: next});
                   }}>{s.replace(/\.[^/.]+$/, "")}</button>
               ))}
+              
+              {/* 設定選單的內容：全螢幕與移動開關 */}
+              {activeModal === 'settings' && (
+                <>
+                  <button 
+                    className={isFullscreen ? 'active' : ''} 
+                    onClick={() => { toggleFullscreen(); setActiveModal(null); }}
+                  >
+                    {isFullscreen ? "退出全螢幕" : "全螢幕"}
+                  </button>
+                  <button 
+                    className={canMove ? 'active' : ''} 
+                    onClick={() => { setCanMove(!canMove); setActiveModal(null); }}
+                  >
+                    {canMove ? "鎖定角色" : "移動角色"}
+                  </button>
+                </>
+              )}
             </div>
             <button className="modal-close-btn" onClick={() => setActiveModal(null)}>關閉</button>
           </div>
